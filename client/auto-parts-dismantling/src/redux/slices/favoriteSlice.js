@@ -1,6 +1,6 @@
 // src/redux/slices/favoriteSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from '../../axios';
+import axios from '../axios';
 
 // Thunks for Favorite Actions
 

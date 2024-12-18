@@ -1,6 +1,6 @@
 // src/redux/slices/orderSlice.js
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from '../../axios';
+import axios from '../axios';
 
 // Thunks for Order Actions
 
@@ -183,5 +183,5 @@ export const selectOrderStatus = (state) => state.orders.status;
 export const selectOrderError = (state) => state.orders.error;
 
 // Export Actions and Reducer
-export const { clearCurrentOrder } = orderSlice.ac
+export const { clearCurrentOrder } = orderSlice.actions;
 export default orderSlice.reducer;
