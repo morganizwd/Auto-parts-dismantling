@@ -2,9 +2,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../axios';
 
-// Thunks for Favorite Actions
-
-// Add a favorite part
 export const addFavorite = createAsyncThunk(
     'favorites/addFavorite',
     async (partId, { rejectWithValue }) => {
@@ -17,7 +14,6 @@ export const addFavorite = createAsyncThunk(
     }
 );
 
-// Fetch all favorite parts
 export const fetchFavorites = createAsyncThunk(
     'favorites/fetchFavorites',
     async (_, { rejectWithValue }) => {
@@ -30,7 +26,6 @@ export const fetchFavorites = createAsyncThunk(
     }
 );
 
-// Remove a favorite part
 export const removeFavorite = createAsyncThunk(
     'favorites/removeFavorite',
     async (partId, { rejectWithValue }) => {
@@ -43,14 +38,12 @@ export const removeFavorite = createAsyncThunk(
     }
 );
 
-// Initial State
 const initialState = {
     favorites: [],
-    status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+    status: 'idle', 
     error: null,
 };
 
-// Favorite Slice
 const favoriteSlice = createSlice({
     name: 'favorites',
     initialState,
@@ -63,7 +56,6 @@ const favoriteSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Add Favorite
             .addCase(addFavorite.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -77,21 +69,19 @@ const favoriteSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // Fetch Favorites
             .addCase(fetchFavorites.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(fetchFavorites.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.favorites = action.payload;
+                state.favorites = action.payload.favorites; 
             })
             .addCase(fetchFavorites.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload;
             })
 
-            // Remove Favorite
             .addCase(removeFavorite.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -107,11 +97,9 @@ const favoriteSlice = createSlice({
     },
 });
 
-// Selectors
 export const selectAllFavorites = (state) => state.favorites.favorites;
 export const selectFavoriteStatus = (state) => state.favorites.status;
 export const selectFavoriteError = (state) => state.favorites.error;
 
-// Export Actions and Reducer
 export const { clearFavorites } = favoriteSlice.actions;
 export default favoriteSlice.reducer;

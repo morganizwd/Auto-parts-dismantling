@@ -10,7 +10,7 @@ module.exports = {
         primaryKey: true,
         allowNull: false,
       },
-      part_id: { // Внешний ключ к таблице Parts
+      part_id: { 
         type: Sequelize.UUID,
         references: {
           model: 'Parts',
@@ -20,7 +20,7 @@ module.exports = {
         onDelete: 'CASCADE',
         allowNull: false,
       },
-      supplier_id: { // Внешний ключ к таблице Suppliers
+      supplier_id: { 
         type: Sequelize.UUID,
         references: {
           model: 'Suppliers',

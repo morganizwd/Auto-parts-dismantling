@@ -2,14 +2,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../axios';
 
-// Thunks for Inventory Actions
-
-// Create a new inventory item
 export const createInventory = createAsyncThunk(
     'inventory/createInventory',
     async (inventoryData, { rejectWithValue }) => {
         try {
-            const { data } = await axios.post('/inventory', inventoryData);
+            const { data } = await axios.post('/inventories', inventoryData); 
             return data;
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || err.message);
@@ -17,12 +14,11 @@ export const createInventory = createAsyncThunk(
     }
 );
 
-// Fetch all inventory items
 export const fetchAllInventory = createAsyncThunk(
     'inventory/fetchAllInventory',
     async (_, { rejectWithValue }) => {
         try {
-            const { data } = await axios.get('/inventory');
+            const { data } = await axios.get('/inventories'); 
             return data;
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || err.message);
@@ -30,12 +26,11 @@ export const fetchAllInventory = createAsyncThunk(
     }
 );
 
-// Fetch an inventory item by ID
 export const fetchInventoryById = createAsyncThunk(
     'inventory/fetchInventoryById',
     async (inventoryId, { rejectWithValue }) => {
         try {
-            const { data } = await axios.get(`/inventory/${inventoryId}`);
+            const { data } = await axios.get(`/inventories/${inventoryId}`); 
             return data;
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || err.message);
@@ -43,12 +38,11 @@ export const fetchInventoryById = createAsyncThunk(
     }
 );
 
-// Update an inventory item
 export const updateInventory = createAsyncThunk(
     'inventory/updateInventory',
     async ({ id, updatedData }, { rejectWithValue }) => {
         try {
-            const { data } = await axios.put(`/inventory/${id}`, updatedData);
+            const { data } = await axios.put(`/inventories/${id}`, updatedData); 
             return data;
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || err.message);
@@ -56,12 +50,11 @@ export const updateInventory = createAsyncThunk(
     }
 );
 
-// Delete an inventory item
 export const deleteInventory = createAsyncThunk(
     'inventory/deleteInventory',
     async (inventoryId, { rejectWithValue }) => {
         try {
-            await axios.delete(`/inventory/${inventoryId}`);
+            await axios.delete(`/inventories/${inventoryId}`); 
             return inventoryId;
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || err.message);
@@ -69,15 +62,16 @@ export const deleteInventory = createAsyncThunk(
     }
 );
 
-// Initial State
 const initialState = {
     inventoryItems: [],
     currentInventory: null,
-    status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+    total: 0,
+    page: 1,
+    pages: 1,
+    status: 'idle', 
     error: null,
 };
 
-// Inventory Slice
 const inventorySlice = createSlice({
     name: 'inventory',
     initialState,
@@ -90,61 +84,61 @@ const inventorySlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Create Inventory
             .addCase(createInventory.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(createInventory.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.inventoryItems.push(action.payload);
+                state.inventoryItems.push(action.payload.inventory);
             })
             .addCase(createInventory.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload;
             })
 
-            // Fetch All Inventory
             .addCase(fetchAllInventory.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(fetchAllInventory.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.inventoryItems = action.payload;
+                state.inventoryItems = action.payload.inventories; 
+                state.total = action.payload.total;
+                state.page = action.payload.page;
+                state.pages = action.payload.pages;
             })
             .addCase(fetchAllInventory.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload;
             })
 
-            // Fetch Inventory by ID
             .addCase(fetchInventoryById.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(fetchInventoryById.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.currentInventory = action.payload;
+                state.currentInventory = action.payload.inventory; 
             })
             .addCase(fetchInventoryById.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload;
             })
 
-            // Update Inventory
             .addCase(updateInventory.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(updateInventory.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                const index = state.inventoryItems.findIndex(item => item.id === action.payload.id);
+                const updatedItem = action.payload.inventory;
+                const index = state.inventoryItems.findIndex(item => item.id === updatedItem.id);
                 if (index !== -1) {
-                    state.inventoryItems[index] = action.payload;
+                    state.inventoryItems[index] = updatedItem;
                 }
-                if (state.currentInventory && state.currentInventory.id === action.payload.id) {
-                    state.currentInventory = action.payload;
+                if (state.currentInventory && state.currentInventory.id === updatedItem.id) {
+                    state.currentInventory = updatedItem;
                 }
             })
             .addCase(updateInventory.rejected, (state, action) => {
@@ -152,7 +146,6 @@ const inventorySlice = createSlice({
                 state.error = action.payload;
             })
 
-            // Delete Inventory
             .addCase(deleteInventory.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -171,12 +164,10 @@ const inventorySlice = createSlice({
     },
 });
 
-// Selectors
 export const selectAllInventory = (state) => state.inventory.inventoryItems;
 export const selectCurrentInventory = (state) => state.inventory.currentInventory;
 export const selectInventoryStatus = (state) => state.inventory.status;
 export const selectInventoryError = (state) => state.inventory.error;
 
-// Export Actions and Reducer
 export const { clearCurrentInventory } = inventorySlice.actions;
 export default inventorySlice.reducer;

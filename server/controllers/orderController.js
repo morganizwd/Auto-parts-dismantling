@@ -1,6 +1,6 @@
 const { Order, OrderItem, Part, User } = require('../models/models.js');
 const { Op } = require('sequelize');
-const sequelize = require('../db'); 
+const sequelize = require('../db');
 
 const createOrder = async (req, res) => {
     const t = await sequelize.transaction();
@@ -10,11 +10,17 @@ const createOrder = async (req, res) => {
             return res.status(403).json({ message: 'Доступ запрещен' });
         }
 
-        const { delivery_method, items } = req.body; 
+        const { delivery_method, items, address } = req.body; // Добавляем чтение address из тела запроса
 
         if (!delivery_method || !items || !Array.isArray(items) || items.length === 0) {
             await t.rollback();
             return res.status(400).json({ message: 'Пожалуйста, укажите способ доставки и список запчастей для заказа' });
+        }
+
+        // Если delivery_method = 'courier', нужно проверить наличие address
+        if (delivery_method === 'courier' && (!address || address.trim() === '')) {
+            await t.rollback();
+            return res.status(400).json({ message: 'Пожалуйста, укажите адрес доставки' });
         }
 
         const partIds = items.map(item => item.part_id);
@@ -47,6 +53,7 @@ const createOrder = async (req, res) => {
             status: 'pending',
             total_price: totalPrice.toFixed(2),
             delivery_method,
+            address: delivery_method === 'courier' ? address : null,
         }, { transaction: t });
 
         for (const item of items) {
@@ -109,6 +116,10 @@ const getOrders = async (req, res) => {
                             attributes: ['id', 'name', 'price'],
                         },
                     ],
+                },
+                {
+                    model: User,
+                    attributes: ['id', 'username', 'email'],
                 },
             ],
         });

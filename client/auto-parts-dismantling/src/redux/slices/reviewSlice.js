@@ -2,9 +2,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../axios';
 
-// Thunks for Review Actions
-
-// Create a new review
 export const createReview = createAsyncThunk(
     'reviews/createReview',
     async (reviewData, { rejectWithValue }) => {
@@ -17,7 +14,6 @@ export const createReview = createAsyncThunk(
     }
 );
 
-// Fetch all reviews
 export const fetchAllReviews = createAsyncThunk(
     'reviews/fetchAllReviews',
     async (_, { rejectWithValue }) => {
@@ -30,7 +26,6 @@ export const fetchAllReviews = createAsyncThunk(
     }
 );
 
-// Fetch a review by ID
 export const fetchReviewById = createAsyncThunk(
     'reviews/fetchReviewById',
     async (reviewId, { rejectWithValue }) => {
@@ -43,7 +38,6 @@ export const fetchReviewById = createAsyncThunk(
     }
 );
 
-// Update a review
 export const updateReview = createAsyncThunk(
     'reviews/updateReview',
     async ({ id, updatedData }, { rejectWithValue }) => {
@@ -56,7 +50,6 @@ export const updateReview = createAsyncThunk(
     }
 );
 
-// Delete a review
 export const deleteReview = createAsyncThunk(
     'reviews/deleteReview',
     async (reviewId, { rejectWithValue }) => {
@@ -69,15 +62,13 @@ export const deleteReview = createAsyncThunk(
     }
 );
 
-// Initial State
 const initialState = {
     reviews: [],
     currentReview: null,
-    status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+    status: 'idle', 
     error: null,
 };
 
-// Review Slice
 const reviewSlice = createSlice({
     name: 'reviews',
     initialState,
@@ -90,7 +81,6 @@ const reviewSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Create Review
             .addCase(createReview.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -104,7 +94,6 @@ const reviewSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // Fetch All Reviews
             .addCase(fetchAllReviews.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -118,7 +107,6 @@ const reviewSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // Fetch Review by ID
             .addCase(fetchReviewById.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -132,7 +120,6 @@ const reviewSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // Update Review
             .addCase(updateReview.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -152,7 +139,6 @@ const reviewSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // Delete Review
             .addCase(deleteReview.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -171,12 +157,10 @@ const reviewSlice = createSlice({
     },
 });
 
-// Selectors
 export const selectAllReviews = (state) => state.reviews.reviews;
 export const selectCurrentReview = (state) => state.reviews.currentReview;
 export const selectReviewStatus = (state) => state.reviews.status;
 export const selectReviewError = (state) => state.reviews.error;
 
-// Export Actions and Reducer
 export const { clearCurrentReview } = reviewSlice.actions;
 export default reviewSlice.reducer;

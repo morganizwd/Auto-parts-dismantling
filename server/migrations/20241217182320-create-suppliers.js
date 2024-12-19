@@ -16,18 +16,18 @@ module.exports = {
       },
       contact_info: {
         type: Sequelize.JSON,
-        allowNull: true, // Если контактная информация не обязательна
+        allowNull: true, 
       },
       rating: {
         type: Sequelize.DECIMAL(3, 2),
         defaultValue: 0.00,
         allowNull: false,
       },
-      createdAt: { // Поле для времени создания записи
+      createdAt: { 
         allowNull: false,
         type: Sequelize.DATE,
       },
-      updatedAt: { // Поле для времени обновления записи
+      updatedAt: { 
         allowNull: false,
         type: Sequelize.DATE,
       },

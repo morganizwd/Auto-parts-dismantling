@@ -11,7 +11,7 @@ module.exports = function (req, res, next) {
         console.log('Decoded token:', decoded);
 
         if (decoded.userId) {
-            req.user = { userId: decoded.userId };
+            req.user = { userId: decoded.userId, role: decoded.role }; 
         } else {
             return res.status(401).json({ message: 'Не авторизован' });
         }

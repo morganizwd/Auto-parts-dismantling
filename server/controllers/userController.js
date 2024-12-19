@@ -1,6 +1,7 @@
-const { User } = require('../models/models'); 
-const bcrypt = require('bcrypt'); 
-const jwt = require('jsonwebtoken'); 
+const { User } = require('../models/models');
+const { Op } = require('sequelize');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const register = async (req, res) => {
     try {
@@ -12,7 +13,7 @@ const register = async (req, res) => {
 
         const existingUser = await User.findOne({
             where: {
-                [User.sequelize.Op.or]: [{ email }, { username }],
+                [Op.or]: [{ email }, { username }],
             },
         });
 
@@ -137,6 +138,8 @@ const updateUser = async (req, res) => {
     try {
         const userId = req.user.userId;
         const { username, email, password } = req.body;
+
+        console.log('Полученные данные для обновления:', req.body); 
 
         const user = await User.findByPk(userId);
 

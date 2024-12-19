@@ -2,9 +2,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../axios';
 
-// Thunks for Part Actions
-
-// Create a new part
 export const createPart = createAsyncThunk(
     'parts/createPart',
     async (partData, { rejectWithValue }) => {
@@ -17,20 +14,18 @@ export const createPart = createAsyncThunk(
     }
 );
 
-// Fetch all parts
 export const fetchAllParts = createAsyncThunk(
     'parts/fetchAllParts',
-    async (_, { rejectWithValue }) => {
+    async (params, { rejectWithValue }) => {
         try {
-            const { data } = await axios.get('/parts');
-            return data;
+            const response = await axios.get('/parts', { params });
+            return response.data;
         } catch (err) {
             return rejectWithValue(err.response?.data?.message || err.message);
         }
     }
 );
 
-// Fetch a part by ID
 export const fetchPartById = createAsyncThunk(
     'parts/fetchPartById',
     async (partId, { rejectWithValue }) => {
@@ -43,7 +38,23 @@ export const fetchPartById = createAsyncThunk(
     }
 );
 
-// Update a part
+export const fetchSimilarParts = createAsyncThunk(
+    'parts/fetchSimilarParts',
+    async (compatibility, { rejectWithValue }) => {
+        try {
+            const response = await axios.get('/parts', {
+                params: {
+                    compatibility, 
+                    limit: 5,
+                },
+            });
+            return response.data.parts;
+        } catch (err) {
+            return rejectWithValue(err.response?.data?.message || err.message);
+        }
+    }
+);
+
 export const updatePart = createAsyncThunk(
     'parts/updatePart',
     async ({ id, updatedData }, { rejectWithValue }) => {
@@ -56,7 +67,6 @@ export const updatePart = createAsyncThunk(
     }
 );
 
-// Delete a part
 export const deletePart = createAsyncThunk(
     'parts/deletePart',
     async (partId, { rejectWithValue }) => {
@@ -69,15 +79,16 @@ export const deletePart = createAsyncThunk(
     }
 );
 
-// Initial State
 const initialState = {
     parts: [],
     currentPart: null,
-    status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+    total: 0,
+    page: 1,
+    pages: 1,
+    status: 'idle', 
     error: null,
 };
 
-// Part Slice
 const partSlice = createSlice({
     name: 'parts',
     initialState,
@@ -90,61 +101,60 @@ const partSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Create Part
             .addCase(createPart.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(createPart.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.parts.push(action.payload);
+                state.parts.push(action.payload.part);
             })
             .addCase(createPart.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload;
             })
 
-            // Fetch All Parts
             .addCase(fetchAllParts.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(fetchAllParts.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.parts = action.payload;
+                state.parts = action.payload.parts; 
+                state.total = action.payload.total;
+                state.page = action.payload.page;
+                state.pages = action.payload.pages;
             })
             .addCase(fetchAllParts.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload;
             })
 
-            // Fetch Part by ID
             .addCase(fetchPartById.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(fetchPartById.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.currentPart = action.payload;
+                state.currentPart = action.payload.part;
             })
             .addCase(fetchPartById.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload;
             })
 
-            // Update Part
             .addCase(updatePart.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(updatePart.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                const index = state.parts.findIndex(part => part.id === action.payload.id);
+                const index = state.parts.findIndex(part => part.id === action.payload.part.id);
                 if (index !== -1) {
-                    state.parts[index] = action.payload;
+                    state.parts[index] = action.payload.part;
                 }
-                if (state.currentPart && state.currentPart.id === action.payload.id) {
-                    state.currentPart = action.payload;
+                if (state.currentPart && state.currentPart.id === action.payload.part.id) {
+                    state.currentPart = action.payload.part;
                 }
             })
             .addCase(updatePart.rejected, (state, action) => {
@@ -152,7 +162,6 @@ const partSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // Delete Part
             .addCase(deletePart.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -167,16 +176,28 @@ const partSlice = createSlice({
             .addCase(deletePart.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload;
+            })
+
+            .addCase(fetchSimilarParts.pending, (state) => {
+                state.status = 'loading';
+                state.error = null;
+            })
+            .addCase(fetchSimilarParts.fulfilled, (state, action) => {
+                state.status = 'succeeded';
+                state.similarParts = action.payload;
+            })
+            .addCase(fetchSimilarParts.rejected, (state, action) => {
+                state.status = 'failed';
+                state.error = action.payload;
             });
     },
 });
 
-// Selectors
 export const selectAllParts = (state) => state.parts.parts;
 export const selectCurrentPart = (state) => state.parts.currentPart;
 export const selectPartStatus = (state) => state.parts.status;
 export const selectPartError = (state) => state.parts.error;
+export const selectSimilarParts = (state) => state.parts.similarParts;
 
-// Export Actions and Reducer
 export const { clearCurrentPart } = partSlice.actions;
 export default partSlice.reducer;

@@ -51,12 +51,16 @@ const Part = sequelize.define('Part', {
         allowNull: false,
     },
     compatibility: {
-        type: DataTypes.JSON, 
+        type: DataTypes.JSON,
     },
     stock: {
         type: DataTypes.INTEGER,
         defaultValue: 0,
         allowNull: false,
+    },
+    image: {
+        type: DataTypes.STRING, // будет хранить имя файла
+        allowNull: true, // поле не обязательное
     },
 }, {
     timestamps: true,
@@ -73,7 +77,7 @@ const Supplier = sequelize.define('Supplier', {
         allowNull: false,
     },
     contact_info: {
-        type: DataTypes.JSON, 
+        type: DataTypes.JSON,
     },
     rating: {
         type: DataTypes.DECIMAL(3, 2),
@@ -102,6 +106,10 @@ const Order = sequelize.define('Order', {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    address: {
+        type: DataTypes.STRING,
+        allowNull: true,
+    },
 }, {
     timestamps: true,
 });
@@ -120,7 +128,7 @@ const OrderItem = sequelize.define('OrderItem', {
         },
     },
     price: {
-        type: DataTypes.DECIMAL(10, 2), 
+        type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
     },
 }, {
@@ -199,7 +207,7 @@ Part.hasMany(Favorite, { foreignKey: 'part_id', onDelete: 'CASCADE' });
 Favorite.belongsTo(Part, { foreignKey: 'part_id' });
 
 Supplier.hasMany(Part, { foreignKey: 'supplier_id', onDelete: 'SET NULL' });
-Part.belongsTo(Supplier, { foreignKey: 'supplier_id' });
+Part.belongsTo(Supplier, { foreignKey: 'supplier_id', as: 'supplier' });
 
 Part.hasMany(Inventory, { foreignKey: 'part_id', onDelete: 'CASCADE' });
 Inventory.belongsTo(Part, { foreignKey: 'part_id' });

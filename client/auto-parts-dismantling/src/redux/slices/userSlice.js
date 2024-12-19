@@ -1,13 +1,11 @@
 // src/redux/slices/userSlice.js
+
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../axios';
 
-// Thunks for various actions
-
-// Register a new user
 export const register = createAsyncThunk('user/register', async (params, { rejectWithValue }) => {
     try {
-        const { data } = await axios.post('/register', params);
+        const { data } = await axios.post('/users/register', params);
         return data;
     } catch (err) {
         if (err.response && err.response.data && err.response.data.message) {
@@ -18,10 +16,9 @@ export const register = createAsyncThunk('user/register', async (params, { rejec
     }
 });
 
-// Login user
 export const login = createAsyncThunk('user/login', async (params, { rejectWithValue }) => {
     try {
-        const { data } = await axios.post('/login', params);
+        const { data } = await axios.post('/users/login', params); 
         return data;
     } catch (err) {
         if (err.response && err.response.data && err.response.data.message) {
@@ -32,10 +29,9 @@ export const login = createAsyncThunk('user/login', async (params, { rejectWithV
     }
 });
 
-// Fetch current authenticated user
 export const fetchCurrentUser = createAsyncThunk('user/fetchCurrentUser', async (_, { rejectWithValue }) => {
     try {
-        const { data } = await axios.get('/profile');
+        const { data } = await axios.get('/users/profile'); 
         return data;
     } catch (err) {
         if (err.response && err.response.data && err.response.data.message) {
@@ -46,14 +42,9 @@ export const fetchCurrentUser = createAsyncThunk('user/fetchCurrentUser', async 
     }
 });
 
-// Update current user
 export const updateUser = createAsyncThunk('user/updateUser', async (formData, { rejectWithValue }) => {
     try {
-        const { data } = await axios.put('/profile', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        });
+        const { data } = await axios.put('/users/profile', formData); 
         return data;
     } catch (err) {
         if (err.response && err.response.data && err.response.data.message) {
@@ -64,10 +55,9 @@ export const updateUser = createAsyncThunk('user/updateUser', async (formData, {
     }
 });
 
-// Delete current user
 export const deleteUser = createAsyncThunk('user/deleteUser', async (_, { rejectWithValue }) => {
     try {
-        await axios.delete('/profile');
+        await axios.delete('/users/profile');
         return;
     } catch (err) {
         if (err.response && err.response.data && err.response.data.message) {
@@ -78,10 +68,9 @@ export const deleteUser = createAsyncThunk('user/deleteUser', async (_, { reject
     }
 });
 
-// Fetch all users
 export const fetchAllUsers = createAsyncThunk('user/fetchAllUsers', async (_, { rejectWithValue }) => {
     try {
-        const { data } = await axios.get('/');
+        const { data } = await axios.get('/users/');
         return data;
     } catch (err) {
         if (err.response && err.response.data && err.response.data.message) {
@@ -92,10 +81,9 @@ export const fetchAllUsers = createAsyncThunk('user/fetchAllUsers', async (_, { 
     }
 });
 
-// Fetch user by ID
 export const fetchUserById = createAsyncThunk('user/fetchUserById', async (userId, { rejectWithValue }) => {
     try {
-        const { data } = await axios.get(`/${userId}`);
+        const { data } = await axios.get(`/users/${userId}`);
         return data;
     } catch (err) {
         if (err.response && err.response.data && err.response.data.message) {
@@ -107,18 +95,16 @@ export const fetchUserById = createAsyncThunk('user/fetchUserById', async (userI
 });
 
 const initialState = {
-    user: null,          // Current authenticated user
-    users: [],           // List of all users
-    status: 'idle',      // 'idle' | 'loading' | 'succeeded' | 'failed'
+    user: null,       
+    users: [],          
+    status: 'idle',     
     error: null,
 };
 
-// Create the slice
 const userSlice = createSlice({
     name: 'user',
     initialState,
     reducers: {
-        // Logout action
         logout: (state) => {
             state.user = null;
             state.status = 'idle';
@@ -127,7 +113,6 @@ const userSlice = createSlice({
         },
     },
     extraReducers: (builder) => {
-        // Register
         builder
             .addCase(register.pending, (state) => {
                 state.status = 'loading';
@@ -135,8 +120,9 @@ const userSlice = createSlice({
             })
             .addCase(register.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.user = action.payload;
+                state.user = action.payload.user;
                 localStorage.setItem('token', action.payload.token);
+                localStorage.setItem('role', action.payload.user.role); 
                 axios.defaults.headers.common['Authorization'] = `Bearer ${action.payload.token}`;
             })
             .addCase(register.rejected, (state, action) => {
@@ -151,8 +137,9 @@ const userSlice = createSlice({
             })
             .addCase(login.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.user = action.payload;
+                state.user = action.payload.user;
                 localStorage.setItem('token', action.payload.token);
+                localStorage.setItem('role', action.payload.user.role); 
                 axios.defaults.headers.common['Authorization'] = `Bearer ${action.payload.token}`;
             })
             .addCase(login.rejected, (state, action) => {
@@ -160,35 +147,32 @@ const userSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            // Fetch Current User
             .addCase(fetchCurrentUser.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(fetchCurrentUser.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.user = action.payload;
+                state.user = action.payload.user; 
             })
             .addCase(fetchCurrentUser.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload || action.error.message;
             })
 
-            // Update User
             .addCase(updateUser.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(updateUser.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.user = action.payload;
+                state.user = action.payload.user; 
             })
             .addCase(updateUser.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload || action.error.message;
             })
 
-            // Delete User
             .addCase(deleteUser.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -204,28 +188,26 @@ const userSlice = createSlice({
                 state.error = action.payload || action.error.message;
             })
 
-            // Fetch All Users
             .addCase(fetchAllUsers.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(fetchAllUsers.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                state.users = action.payload;
+                state.users = action.payload.users; 
             })
             .addCase(fetchAllUsers.rejected, (state, action) => {
                 state.status = 'failed';
                 state.error = action.payload || action.error.message;
             })
 
-            // Fetch User by ID
             .addCase(fetchUserById.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
             })
             .addCase(fetchUserById.fulfilled, (state, action) => {
                 state.status = 'succeeded';
-                const user = action.payload;
+                const user = action.payload.user; 
                 const existingUser = state.users.find((u) => u.id === user.id);
                 if (existingUser) {
                     Object.assign(existingUser, user);
@@ -240,13 +222,11 @@ const userSlice = createSlice({
     },
 });
 
-// Selectors
 export const selectIsAuth = (state) => Boolean(state.user.user);
 export const selectCurrentUser = (state) => state.user.user;
 export const selectAllUsers = (state) => state.user.users;
 export const selectUserStatus = (state) => state.user.status;
 export const selectUserError = (state) => state.user.error;
 
-// Export actions and reducer
 export const { logout } = userSlice.actions;
 export default userSlice.reducer;

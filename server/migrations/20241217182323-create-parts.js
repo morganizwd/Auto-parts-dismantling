@@ -29,7 +29,7 @@ module.exports = {
         defaultValue: 0,
         allowNull: false,
       },
-      supplier_id: { // Внешний ключ к таблице Suppliers
+      supplier_id: { 
         type: Sequelize.UUID,
         references: {
           model: 'Suppliers',

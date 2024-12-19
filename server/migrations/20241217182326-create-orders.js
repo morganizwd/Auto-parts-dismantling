@@ -10,7 +10,7 @@ module.exports = {
         primaryKey: true,
         allowNull: false,
       },
-      user_id: { // Внешний ключ к таблице Users
+      user_id: { 
         type: Sequelize.UUID,
         references: {
           model: 'Users',
@@ -32,6 +32,10 @@ module.exports = {
       delivery_method: {
         type: Sequelize.STRING,
         allowNull: false,
+      },
+      addres: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       createdAt: {
         allowNull: false,

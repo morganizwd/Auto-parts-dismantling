@@ -1,5 +1,7 @@
-const { Part, Supplier, Inventory } = require('../models/models.js');
-const { Op } = require('sequelize');
+// controllers/partController.js
+
+const { Op, where, fn, col } = require('sequelize');
+const { Part, Supplier, Inventory, Review } = require('../models/models.js');
 
 const createPart = async (req, res) => {
     try {
@@ -99,12 +101,13 @@ const deletePart = async (req, res) => {
 const getAllParts = async (req, res) => {
     try {
         const {
-            search, 
+            search,
             minPrice,
             maxPrice,
             supplier_id,
-            sortBy, 
-            sortOrder, 
+            compatibility,
+            sortBy,
+            sortOrder,
             page = 1,
             limit = 10,
         } = req.query;
@@ -129,7 +132,11 @@ const getAllParts = async (req, res) => {
             whereClause.supplier_id = supplier_id;
         }
 
-        let orderClause = [['createdAt', 'DESC']]; 
+        if (compatibility) {
+            whereClause['compatibility.Cars'] = { [Op.iLike]: `%${compatibility}%` };
+        }
+
+        let orderClause = [['createdAt', 'DESC']];
         if (sortBy) {
             const order = sortOrder && ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'ASC';
             orderClause = [[sortBy, order]];
@@ -145,6 +152,7 @@ const getAllParts = async (req, res) => {
             include: [
                 {
                     model: Supplier,
+                    as: 'supplier',
                     attributes: ['id', 'name', 'rating'],
                 },
                 {
@@ -174,13 +182,25 @@ const getPartById = async (req, res) => {
             include: [
                 {
                     model: Supplier,
+                    as: 'supplier',
                     attributes: ['id', 'name', 'rating', 'contact_info'],
                 },
                 {
                     model: Inventory,
                     attributes: ['id', 'quantity', 'location'],
                 },
+                {
+                    model: Review,
+                    attributes: ['id', 'rating', 'comment', 'createdAt'],
+                },
             ],
+            attributes: {
+                include: [
+                    [fn('AVG', col('Reviews.rating')), 'averageRating'],
+                    [fn('COUNT', col('Reviews.id')), 'reviewsCount'],
+                ],
+            },
+            group: ['Part.id', 'supplier.id', 'Inventories.id', 'Reviews.id'],
         });
 
         if (!part) {
@@ -194,10 +214,41 @@ const getPartById = async (req, res) => {
     }
 };
 
+const uploadPartImage = async (req, res) => {
+    try {
+        if (req.user.role !== 'operator') {
+            return res.status(403).json({ message: 'Доступ запрещен' });
+        }
+
+        const { id } = req.params;
+
+        const part = await Part.findByPk(id);
+        if (!part) {
+            if (req.file) {
+
+            }
+            return res.status(404).json({ message: 'Запчасть не найдена' });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({ message: 'Файл не загружен' });
+        }
+
+        part.image = req.file.filename;
+        await part.save();
+
+        res.status(200).json({ message: 'Изображение успешно загружено', part });
+    } catch (error) {
+        console.error('Ошибка загрузки изображения для запчасти:', error);
+        res.status(500).json({ message: 'Внутренняя ошибка сервера' });
+    }
+};
+
 module.exports = {
     createPart,
     updatePart,
     deletePart,
     getAllParts,
     getPartById,
+    uploadPartImage,
 };

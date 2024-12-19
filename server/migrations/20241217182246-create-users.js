@@ -29,7 +29,7 @@ module.exports = {
         defaultValue: 'client',
         allowNull: false,
       },
-      createdAt: { // Автоматически добавляются поля createdAt и updatedAt, если timestamps: true
+      createdAt: { 
         allowNull: false,
         type: Sequelize.DATE,
       },

@@ -2,9 +2,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from '../axios';
 
-// Thunks for Order Actions
-
-// Create a new order
 export const createOrder = createAsyncThunk(
     'orders/createOrder',
     async (orderData, { rejectWithValue }) => {
@@ -17,7 +14,6 @@ export const createOrder = createAsyncThunk(
     }
 );
 
-// Fetch all orders
 export const fetchOrders = createAsyncThunk(
     'orders/fetchOrders',
     async (_, { rejectWithValue }) => {
@@ -30,7 +26,6 @@ export const fetchOrders = createAsyncThunk(
     }
 );
 
-// Fetch an order by ID
 export const fetchOrderById = createAsyncThunk(
     'orders/fetchOrderById',
     async (orderId, { rejectWithValue }) => {
@@ -43,7 +38,6 @@ export const fetchOrderById = createAsyncThunk(
     }
 );
 
-// Update order status
 export const updateOrderStatus = createAsyncThunk(
     'orders/updateOrderStatus',
     async ({ id, status }, { rejectWithValue }) => {
@@ -56,7 +50,6 @@ export const updateOrderStatus = createAsyncThunk(
     }
 );
 
-// Cancel an order
 export const cancelOrder = createAsyncThunk(
     'orders/cancelOrder',
     async (orderId, { rejectWithValue }) => {
@@ -69,15 +62,13 @@ export const cancelOrder = createAsyncThunk(
     }
 );
 
-// Initial State
 const initialState = {
     orders: [],
     currentOrder: null,
-    status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+    status: 'idle', 
     error: null,
 };
 
-// Order Slice
 const orderSlice = createSlice({
     name: 'orders',
     initialState,
@@ -90,7 +81,6 @@ const orderSlice = createSlice({
     },
     extraReducers: (builder) => {
         builder
-            // Create Order
             .addCase(createOrder.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -104,7 +94,6 @@ const orderSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // Fetch All Orders
             .addCase(fetchOrders.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -118,7 +107,6 @@ const orderSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // Fetch Order by ID
             .addCase(fetchOrderById.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -132,7 +120,6 @@ const orderSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // Update Order Status
             .addCase(updateOrderStatus.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -153,7 +140,6 @@ const orderSlice = createSlice({
                 state.error = action.payload;
             })
 
-            // Cancel Order
             .addCase(cancelOrder.pending, (state) => {
                 state.status = 'loading';
                 state.error = null;
@@ -176,12 +162,10 @@ const orderSlice = createSlice({
     },
 });
 
-// Selectors
 export const selectAllOrders = (state) => state.orders.orders;
 export const selectCurrentOrder = (state) => state.orders.currentOrder;
 export const selectOrderStatus = (state) => state.orders.status;
 export const selectOrderError = (state) => state.orders.error;
 
-// Export Actions and Reducer
 export const { clearCurrentOrder } = orderSlice.actions;
 export default orderSlice.reducer;
