@@ -67,7 +67,7 @@ const ProductDetailPage = () => {
                 const response = await axios.get(`/parts/${id}`);
                 setPart(response.data.part);
                 setStatus('succeeded');
-
+    
                 if (isAuthenticated && userRole === 'client') {
                     const reviewsResponse = await axios.get('/reviews', {
                         params: { part_id: id },
@@ -79,13 +79,15 @@ const ProductDetailPage = () => {
                         setHasReviewed(true);
                     }
                 }
-
+    
                 if (isAuthenticated && userRole === 'client') {
                     const favoritesResponse = await axios.get('/favorites', {
-                        params: { part_id: id },
+                        params: { part_id: id }, 
                     });
                     if (favoritesResponse.data.favorites.length > 0) {
                         setIsFavorite(true);
+                    } else {
+                        setIsFavorite(false); 
                     }
                 }
             } catch (err) {
@@ -96,7 +98,7 @@ const ProductDetailPage = () => {
                 );
             }
         };
-
+    
         fetchPart();
     }, [id, isAuthenticated, userRole, userId]);
 

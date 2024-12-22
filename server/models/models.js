@@ -164,6 +164,12 @@ const Favorite = sequelize.define('Favorite', {
     },
 }, {
     timestamps: true,
+    indexes: [
+        {
+            unique: true,
+            fields: ['user_id', 'part_id'],
+        },
+    ],
 });
 
 const Inventory = sequelize.define('Inventory', {

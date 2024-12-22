@@ -79,14 +79,19 @@ const getFavorites = async (req, res) => {
             return res.status(403).json({ message: 'Доступ запрещен' });
         }
 
-        const { page = 1, limit = 10 } = req.query;
+        const { page = 1, limit = 10, part_id } = req.query;
 
         const offset = (page - 1) * limit;
 
+        const whereClause = {
+            user_id: req.user.userId,
+        };
+        if (part_id) {
+            whereClause.part_id = part_id;
+        }
+
         const { rows: favorites, count } = await Favorite.findAndCountAll({
-            where: {
-                user_id: req.user.userId,
-            },
+            where: whereClause,
             include: [
                 {
                     model: Part,
